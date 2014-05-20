@@ -66,7 +66,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     self.animationDuration = kDefaultAnimationDuration;
     self.animationType = TWTSideMenuAnimationTypeSlideOver;
     self.animationSwapDuration = kDefaultSwapAnimationDuration;
-
+    
     [self addViewController:self.menuViewController];
     [self addViewController:self.mainViewController];
 }
@@ -86,9 +86,6 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     [self.view addSubview:self.containerView];
     [self.mainViewController didMoveToParentViewController:self];
 
-    [self addChildViewController:self.menuViewController];
-    [self.view insertSubview:self.menuViewController.view belowSubview:self.containerView];
-    [self.menuViewController didMoveToParentViewController:self];
 
     [self updateMenuViewWithTransform:[self closeTransformForMenuView]];
 }
@@ -209,6 +206,8 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     
     self.open = YES;
     self.menuViewController.view.transform = [self closeTransformForMenuView];
+    [self addChildViewController:self.menuViewController];
+    [self.view insertSubview:self.menuViewController.view belowSubview:self.containerView];
 
     void (^openMenuBlock)(void) = ^{
         self.menuViewController.view.transform = CGAffineTransformIdentity;
@@ -216,6 +215,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     };
     
     void (^openCompleteBlock)(BOOL) = ^(BOOL finished) {
+        [self.menuViewController didMoveToParentViewController:self];
         if (finished) {
             [self addOverlayButtonToMainViewController];
         }
@@ -260,6 +260,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     [self removeOverlayButtonFromMainViewController];
     
     void (^closeMenuBlock)(void) = ^{
+        [self.menuViewController willMoveToParentViewController:nil];
         self.menuViewController.view.transform = [self closeTransformForMenuView];
         self.containerView.transform = CGAffineTransformIdentity;
     };
@@ -273,7 +274,8 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
         if ([self.delegate respondsToSelector:@selector(sideMenuViewControllerDidCloseMenu:)]) {
 	        [self.delegate sideMenuViewControllerDidCloseMenu:self];
         }
-        
+        [self.menuViewController.view removeFromSuperview];
+        [self.menuViewController removeFromParentViewController];
         if (completion) {
             completion(finished);
         }
