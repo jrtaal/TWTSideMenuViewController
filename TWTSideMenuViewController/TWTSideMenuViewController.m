@@ -80,12 +80,15 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     [self addChildViewController:self.mainViewController];
     self.containerView = [[UIView alloc] initWithFrame:self.view.bounds];
     self.containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
+    self.mainViewController.view.autoresizesSubviews = true;
+
     self.mainViewController.view.frame = self.containerView.bounds;
+    self.mainViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
     [self.containerView addSubview:self.mainViewController.view];
     [self.view addSubview:self.containerView];
     [self.mainViewController didMoveToParentViewController:self];
-
+    self.containerView.backgroundColor = nil;
 
     [self updateMenuViewWithTransform:[self closeTransformForMenuView]];
 }
@@ -102,6 +105,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     [self removeShadowFromViewController:self.mainViewController];
 
     if (self.open) {
@@ -134,6 +138,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
         [self updateMenuViewWithTransform:CGAffineTransformIdentity];
         [self addShadowToViewController:self.mainViewController];
     }
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
@@ -325,6 +330,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
     
     [self addShadowToViewController:incomingViewController];
     [self addViewController:incomingViewController];
+    incomingViewController.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.containerView addSubview:incomingViewController.view];
 
     incomingViewController.view.frame = self.containerView.bounds;
@@ -401,7 +407,7 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
 - (void)addShadowToViewController:(UIViewController *)viewController
 {
     CALayer *mainLayer = viewController.view.layer;
-    if (mainLayer) {
+    if (mainLayer  && self.shadowColor) {
         UIBezierPath *path = [UIBezierPath bezierPathWithRect:mainLayer.bounds];
         mainLayer.shadowPath = path.CGPath;
         mainLayer.shadowColor = self.shadowColor.CGColor;
