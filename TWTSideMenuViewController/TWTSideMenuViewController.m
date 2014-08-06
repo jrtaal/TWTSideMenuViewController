@@ -110,14 +110,26 @@ static NSTimeInterval const kDefaultSwapAnimationClosedDuration = 0.35;
 
     if (self.open) {
         [self removeOverlayButtonFromMainViewController];
+        if ([self.delegate respondsToSelector:@selector(sideMenuViewControllerWillCloseMenu:)]) {
+            [self.delegate sideMenuViewControllerWillCloseMenu:self];
+        }
+        [self.menuViewController willMoveToParentViewController:nil];
 
         [UIView animateWithDuration:duration animations:^{
             // Effectively closes the menu and reapplies transform. This is a half measure to get around the problem of new view controllers getting pushed on to the hierarchy without the proper height navigation.
             self.menuViewController.view.transform = [self closeTransformForMenuView];
             self.containerView.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
+            _open = false;
             self.menuViewController.view.center = (CGPoint) { CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds) };
             self.menuViewController.view.bounds = self.view.bounds;
+
+            self.menuViewController.view.transform = CGAffineTransformIdentity;
+            if ([self.delegate respondsToSelector:@selector(sideMenuViewControllerDidCloseMenu:)]) {
+                [self.delegate sideMenuViewControllerDidCloseMenu:self];
+            }
+            [self.menuViewController.view removeFromSuperview];
+            [self.menuViewController removeFromParentViewController];
         }];
     } else {
         [self updateMenuViewWithTransform:CGAffineTransformIdentity];
